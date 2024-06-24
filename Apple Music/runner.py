@@ -16,6 +16,8 @@ logging.basicConfig(filename='error_log.txt', level=logging.ERROR, format='%(asc
 def find_serial_device():
     devices = glob.glob('/dev/tty.*')
     print(f"Found devices: {devices}")
+    devices = [device for device in devices if 'Bluetooth-Incoming-Port' not in device]
+    print(f"Filtered devices: {devices}")
     for device in devices:
         if 'usbmodemNano_D1' in device:
             print(f"Selected device: {device}")
@@ -181,17 +183,32 @@ def next_song():
 def previous_song():
     os.system("osascript -e 'tell application \"Music\" to previous track'")
 
-def main():
+def terminate_script():
+    log_error("No device found")
+    print("No device found. Terminating script.")
+    exit(1)
+
+def monitor_device():
     while True:
         device = find_serial_device()
         if not device:
-            print("No serial device found.")
-            return
+            terminate_script()
+        time.sleep(10)
+
+def main():
+    start_time = time.time()
+    while True:
+        device = find_serial_device()
+        if not device:
+            if time.time() - start_time > 10:
+                terminate_script()
+            time.sleep(1)
+            continue
 
         global ser
         try:
             print(f"Connecting to serial device: {device}")
-            ser = serial.Serial(device,921600)
+            ser = serial.Serial(device, 921600)
             time.sleep(2)  # Give some time for the connection to establish
             sync_device_status()  # Sync initial status immediately
 
@@ -210,7 +227,13 @@ def main():
             volume_thread.daemon = True
             volume_thread.start()
 
+            monitor_thread = threading.Thread(target=monitor_device)
+            monitor_thread.daemon = True
+            monitor_thread.start()
+
             while True:
+                if not ser.is_open:
+                    terminate_script()
                 time.sleep(1)
         except Exception as e:
             log_error(f"Error initializing serial connection: {e}")
