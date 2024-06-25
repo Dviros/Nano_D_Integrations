@@ -1,15 +1,18 @@
 ## How to use this script?
 - Create a new folder and a virtual environment using python3:
+
 ```python3 -m venv binaris```
 
 ```source binaris/bin/activate```
 
 
 - Use pip3 to install:
+  
 ```pip3 install pyserial esptool```
 
 
 - Call the script using screen:
+  
 ```screen -dmS myscript python3 runner.py```
 
 
