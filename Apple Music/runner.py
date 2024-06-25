@@ -13,6 +13,13 @@ import esptool
 
 logging.basicConfig(filename='error_log.txt', level=logging.ERROR, format='%(asctime)s %(message)s')
 
+# Load profile from profile.json
+def load_profile():
+    with open('profile.json') as f:
+        return json.load(f)
+
+profile = load_profile()
+
 def find_serial_device():
     devices = glob.glob('/dev/tty.*')
     print(f"Found devices: {devices}")
@@ -81,29 +88,11 @@ def handle_serial_input(serial_queue):
 
 def process_key_press(parsed_data):
     try:
-        if parsed_data["ks"] == 1 and parsed_data["kd"] == 0:
-            print("key1 down")
-            previous_song()
-        elif parsed_data["ks"] == 0 and parsed_data["ku"] == 0:
-            print("key1 up")
-        elif parsed_data["ks"] == 2 and parsed_data["kd"] == 1:
-            print("key2 down")
-            playPause_system_audio()
-        elif parsed_data["ks"] == 0 and parsed_data["ku"] == 1:
-            print("key2 up")
-        elif parsed_data["ks"] == 4 and parsed_data["kd"] == 2:
-            print("key3 down")
-            next_song()
-        elif parsed_data["ks"] == 0 and parsed_data["ku"] == 2:
-            print("key3 up")
-        elif parsed_data["ks"] == 8 and parsed_data["kd"] == 3:
-            print("key4 down")
-            if get_mute_status():
-                unmute_system_audio()
-            else:
-                mute_system_audio()
-        elif parsed_data["ks"] == 0 and parsed_data["ku"] == 3:
-            print("key4 up")
+        for command in profile["commands"]:
+            if parsed_data["ks"] == command["ks"] and parsed_data["kd"] == command["kd"]:
+                print(f"{command['description']}")
+                os.system(command["command"])
+                break
     except Exception as e:
         log_error(f"Error processing key press: {e}")
 
@@ -155,33 +144,6 @@ def handle_volume_changes(volume_queue):
                 volume_queue.clear()  # Clear the queue to process only the latest value
         except Exception as e:
             log_error(f"Error handling volume changes: {e}")
-
-def playPause_system_audio():
-    if get_music_status() == "playing":
-        pause_system_audio()
-    else:
-        play_system_audio()
-
-def pause_system_audio():
-    os.system("osascript -e 'tell application \"Music\" to pause'")
-
-def play_system_audio():
-    os.system("osascript -e 'tell application \"Music\" to play'")
-
-def get_music_status():
-    result = subprocess.run(["osascript", "-e", "tell application \"Music\" to get player state"], capture_output=True, text=True)
-    if "playing" in result.stdout:
-        return "playing"
-    elif "paused" in result.stdout:
-        return "paused"
-    else:
-        return "unknown"
-
-def next_song():
-    os.system("osascript -e 'tell application \"Music\" to next track'")
-
-def previous_song():
-    os.system("osascript -e 'tell application \"Music\" to previous track'")
 
 def terminate_script():
     log_error("No device found")
