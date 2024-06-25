@@ -1,0 +1,52 @@
+{
+    "commands": [
+        {
+            "ks": 1,
+            "kd": 0,
+            "description": "key1 down - previous song",
+            "command": "osascript -e 'tell application \"Music\" to previous track'"
+        },
+        {
+            "ks": 0,
+            "ku": 0,
+            "description": "key1 up",
+            "command": "echo 'key1 up'"
+        },
+        {
+            "ks": 2,
+            "kd": 1,
+            "description": "key2 down - play/pause",
+            "command": "osascript -e 'tell application \"Music\" to playpause'"
+        },
+        {
+            "ks": 0,
+            "ku": 1,
+            "description": "key2 up",
+            "command": "echo 'key2 up'"
+        },
+        {
+            "ks": 4,
+            "kd": 2,
+            "description": "key3 down - next song",
+            "command": "osascript -e 'tell application \"Music\" to next track'"
+        },
+        {
+            "ks": 0,
+            "ku": 2,
+            "description": "key3 up",
+            "command": "echo 'key3 up'"
+        },
+        {
+            "ks": 8,
+            "kd": 3,
+            "description": "key4 down - mute/unmute",
+            "command": "osascript -e 'set volume output muted'"
+        },
+        {
+            "ks": 0,
+            "ku": 3,
+            "description": "key4 up",
+            "command": "echo 'key4 up'"
+        }
+    ]
+}
